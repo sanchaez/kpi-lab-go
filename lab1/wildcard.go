@@ -23,10 +23,10 @@ func promptLine(scanner *bufio.Scanner, message string) string {
 
 //prints help
 func helpOption() {
-	fmt.Print("Available commands: \n")
-	fmt.Print("m, match:	execute patten matching\n")
-	fmt.Print("h, help: 	print this text\n")
-	fmt.Print("q, quit: 	quit application\n")
+	fmt.Println("Available commands:")
+	fmt.Println("m, match:	execute patten matching")
+	fmt.Println("h, help: 	print this text")
+	fmt.Println("q, quit: 	quit application")
 }
 
 //matches strings provided by user
@@ -36,7 +36,7 @@ func matchOption(scanner *bufio.Scanner) {
 	result := WildcardMatch(sourceStr, wildcardStr)
 	switch len(result) {
 	case 0:
-		fmt.Print("Substring not found.\n")
+		fmt.Println("Substring not found.")
 	default:
 		fmt.Printf("Found at: %v .\n", result)
 	}
