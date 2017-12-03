@@ -40,8 +40,8 @@ var multipleLetters = testCases{
 
 func auxTestLoop(t *testing.T, tests *testCases) {
 	for _, x := range *tests {
-		result := WildcardMatch(x.source, x.pattern)
-		if reflect.DeepEqual(result, x.expected) {
+		result := Match(x.source, x.pattern)
+		if !reflect.DeepEqual(result, x.expected) {
 			t.Error(
 				"	\ninput:", x.source,
 				"	\npattern:", x.pattern,
