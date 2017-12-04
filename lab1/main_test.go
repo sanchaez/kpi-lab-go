@@ -34,7 +34,7 @@ var multipleLetters = testCases{
 	{"test", "te", []int{0}},
 	{"test", "test", []int{0}},
 	{"abracadabra", "acad", []int{3}},
-	{"She called a storm upon this town.", " t", []int{24, 29}},
+	{"She called a storm upon this town.", " t", []int{23, 28}},
 	{"She called a storm upon this town.", "called", []int{4}},
 }
 
@@ -42,11 +42,11 @@ func auxTestLoop(t *testing.T, tests *testCases) {
 	for _, x := range *tests {
 		result := Match(x.source, x.pattern)
 		if !reflect.DeepEqual(result, x.expected) {
-			t.Error(
-				"	\ninput:", x.source,
-				"	\npattern:", x.pattern,
-				"	\nexpected:", x.expected,
-				"	\nresult:", result,
+			t.Errorf(
+				"input:		%#v	\n"+
+					"pattern:	%#v	\n"+
+					"expected:	%#v\n"+
+					"result:	%#v\n", x.source, x.pattern, x.expected, result,
 			)
 		}
 	}
