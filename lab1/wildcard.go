@@ -7,7 +7,7 @@ import "strings"
 //Trailing wildcards `str***` are ignored.
 //With heading wildcards `***str` position 1 will be returned N times.
 func Match(sourceStr, wildcardStr string) (foundValues []int) {
-	startIndex, sourceIndex, wildcardIndex, hasHeadingWildcard := 0, 0, 0, false
+	hasHeadingWildcard := false
 	foundValues = nil
 
 	//if wildcard is empty pattern match always fails
@@ -16,47 +16,56 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 	}
 
 	//remove trailing *
-	wildcardTrimmed := strings.TrimLeft(wildcardStr, "*")
+	wildcardTrimmed := strings.TrimRight(wildcardStr, "*")
 	// if nothing left pattern always matches all the string
 	if wildcardTrimmed == "" {
-		foundValues = append(foundValues, 0)
+		foundValues = []int{0}
 		return
 	}
 
 	if strings.HasPrefix(wildcardTrimmed, "*") {
-		wildcardTrimmed = strings.TrimRight(wildcardTrimmed, "*")
+		wildcardTrimmed = strings.TrimLeft(wildcardTrimmed, "*")
 		hasHeadingWildcard = true //TODO: do 2 versions of the algorithm
 	}
-	//TODO: add wildcard-in-the-middle case here
 
+	startIndex, sourceIndex, wildcardIndex, wasWildcard, isSearchReset := 0, 0, 0, false, false
+	wcardLength, sourceLength := len(wildcardTrimmed), len(sourceStr)
 	// naїve algorithm
-	for sourceIndex < len(sourceStr) {
-		if sourceStr[sourceIndex] == wildcardTrimmed[wildcardIndex] {
-			// symbol matched
-			if wildcardIndex == len(wildcardTrimmed)-1 {
-				// pattern matched!
-				if hasHeadingWildcard {
-					foundValues = append(foundValues, 0)
-				}
-				foundValues = append(foundValues, startIndex)
-				wildcardIndex = 0
-				startIndex++
-				sourceIndex = startIndex
-			} else {
-				// pattern not matched yet
+	// Example pattern: ex**p*e (example)
+	for startIndex < sourceLength {
+		if wildcardTrimmed[wildcardIndex] == '*' {
+			// skip wildcards until the last one
+			// guaranteed to have at least one non-wildcard at the end
+			for wildcardTrimmed[wildcardIndex] == '*' {
 				wildcardIndex++
-				sourceIndex++
 			}
-		} else if wildcardIndex != 0 {
-			// were matching previously
-			// reset wcard AND source indexes
+			wasWildcard = true
+		}
+
+		if sourceStr[sourceIndex] == wildcardTrimmed[wildcardIndex] {
+			sourceIndex++
+			wildcardIndex++
+			wasWildcard = false
+		} else if wasWildcard {
+			sourceIndex++
+		} else {
+			isSearchReset = true
+		}
+
+		if wildcardIndex >= wcardLength && !isSearchReset {
+			if hasHeadingWildcard {
+				foundValues = append(foundValues, 0)
+			} else {
+				foundValues = append(foundValues, startIndex)
+			}
+			isSearchReset = true
+		}
+
+		if isSearchReset || sourceIndex == sourceLength {
 			wildcardIndex = 0
 			startIndex++
 			sourceIndex = startIndex
-		} else {
-			// not matching yet, just advance
-			startIndex++
-			sourceIndex++
+			isSearchReset = false
 		}
 	}
 

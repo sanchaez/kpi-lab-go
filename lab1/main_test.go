@@ -38,15 +38,34 @@ var multipleLetters = testCases{
 	{"She called a storm upon this town.", "called", []int{4}},
 }
 
+var wildcardSingle = testCases{
+	{"test", "*es", []int{0}},
+	{"test", "te*", []int{0}},
+	{"test", "t*t", []int{0}},
+	{"abracadabra", "ac**ad", []int{3}},
+	{"abracadabra", "a*a", []int{0, 3, 5, 7}},
+	{"She called a storm upon this town.", "st*m", []int{13}},
+	{"She called a storm upon this town.", "***st*m", []int{0}},
+	{"test", "*ak", nil},
+	{"test", "dd*", nil},
+	{"test", "t*dt", nil},
+}
+
+var wildcardMultiple = testCases{
+	{"abracadabra", "ac*o*ad", nil},
+	{"abracadabra", "a*b*a", []int{0, 3, 5, 7}},
+	{"She called a storm upon this town.", "a*st*m", []int{5, 11}},
+}
+
 func auxTestLoop(t *testing.T, tests *testCases) {
 	for _, x := range *tests {
 		result := Match(x.source, x.pattern)
 		if !reflect.DeepEqual(result, x.expected) {
 			t.Errorf(
-				"input:		%#v	\n"+
-					"pattern:	%#v	\n"+
+				"\ninput:		%#v\n"+
+					"pattern:	%#v\n"+
 					"expected:	%#v\n"+
-					"result:	%#v\n", x.source, x.pattern, x.expected, result,
+					"result:		%#v\n", x.source, x.pattern, x.expected, result,
 			)
 		}
 	}
@@ -62,4 +81,12 @@ func TestMultipleLetters(t *testing.T) {
 
 func TestDeadCases(t *testing.T) {
 	auxTestLoop(t, &deadCases)
+}
+
+func TestWildcardSingle(t *testing.T) {
+	auxTestLoop(t, &wildcardSingle)
+}
+
+func TestWildcardMultiple(t *testing.T) {
+	auxTestLoop(t, &wildcardMultiple)
 }
