@@ -28,45 +28,43 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 		hasHeadingWildcard = true
 	}
 
-	startIndex, sourceIndex, wildcardIndex, wasWildcard, isSearchReset := 0, 0, 0, false, false
+	startIndex, sourceIndex, wildcardIndex, wasWildcard := 0, 0, 0, false
 	wcardLength, sourceLength := len(wildcardTrimmed), len(sourceStr)
-	// naїve algorithm
-	// Example pattern: ex**p*e (example)
 	for startIndex < sourceLength {
-		if wildcardTrimmed[wildcardIndex] == '*' {
-			// skip wildcards until the last one
-			// guaranteed to have at least one non-wildcard at the end
-			for wildcardTrimmed[wildcardIndex] == '*' {
-				wildcardIndex++
-			}
-			wasWildcard = true
-		}
-
-		if sourceStr[sourceIndex] == wildcardTrimmed[wildcardIndex] {
-			sourceIndex++
+		wildcardIndex = 0
+		sourceIndex = startIndex
+		for wildcardIndex < wcardLength && 
+		sourceIndex < sourceLength &&
+		wildcardTrimmed[wildcardIndex] == sourceStr[sourceIndex] {
 			wildcardIndex++
-			wasWildcard = false
-		} else if wasWildcard {
 			sourceIndex++
-		} else {
-			isSearchReset = true
+			wasWildcard = false
+			if (wildcardIndex < wcardLength && 
+				wildcardTrimmed[wildcardIndex] == '*') {
+				wasWildcard = true
+				for wildcardIndex < wcardLength && 
+				wildcardTrimmed[wildcardIndex] == '*' {
+					wildcardIndex++
+				}
+			}
+
+			if (wasWildcard && wildcardIndex < wcardLength) {
+				for sourceIndex < sourceLength &&
+				wildcardTrimmed[wildcardIndex] != sourceStr[sourceIndex] {
+						sourceIndex++
+					}
+			}
 		}
 
-		if wildcardIndex >= wcardLength && !isSearchReset {
+		if wildcardIndex >= wcardLength {
 			if hasHeadingWildcard {
 				foundValues = append(foundValues, 0)
 			} else {
 				foundValues = append(foundValues, startIndex)
 			}
-			isSearchReset = true
 		}
 
-		if isSearchReset || sourceIndex == sourceLength {
-			wildcardIndex = 0
-			startIndex++
-			sourceIndex = startIndex
-			isSearchReset = false
-		}
+		startIndex++
 	}
 
 	return
