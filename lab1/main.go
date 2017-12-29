@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+
+	"github.com/sanchaez/kpi-lab-go/lab1/wildcard"
 )
 
 /* Auxiliary functions */
@@ -27,7 +29,7 @@ func helpOption() {
 func matchOption(scanner *bufio.Scanner) {
 	sourceStr := promptLine(scanner, "- Source string > ")
 	wildcardStr := promptLine(scanner, "- Wildcard string > ")
-	result := Match(sourceStr, wildcardStr)
+	result := wildcard.Match(sourceStr, wildcardStr)
 	switch len(result) {
 	case 0:
 		fmt.Println("Substring not found.")
