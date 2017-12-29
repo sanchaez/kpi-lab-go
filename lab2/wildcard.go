@@ -30,32 +30,43 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 
 	startIndex, sourceIndex, wildcardIndex, wasWildcard := 0, 0, 0, false
 	wcardLength, sourceLength := len(wildcardTrimmed), len(sourceStr)
+
+	// main search loop
 	for startIndex < sourceLength {
 		wildcardIndex = 0
 		sourceIndex = startIndex
-		for wildcardIndex < wcardLength && 
-		sourceIndex < sourceLength &&
-		wildcardTrimmed[wildcardIndex] == sourceStr[sourceIndex] {
+
+		// loop to find an entry starting from startIndex
+		for wildcardIndex < wcardLength &&
+			sourceIndex < sourceLength &&
+			wildcardTrimmed[wildcardIndex] == sourceStr[sourceIndex] {
+
 			wildcardIndex++
 			sourceIndex++
+
+			// skip wildcards until the last one
+			// guaranteed to have at least one non-wildcard at the end
 			wasWildcard = false
-			if (wildcardIndex < wcardLength && 
-				wildcardTrimmed[wildcardIndex] == '*') {
-				wasWildcard = true
-				for wildcardIndex < wcardLength && 
+			if wildcardIndex < wcardLength &&
 				wildcardTrimmed[wildcardIndex] == '*' {
+				wasWildcard = true
+				for wildcardIndex < wcardLength &&
+					wildcardTrimmed[wildcardIndex] == '*' {
 					wildcardIndex++
 				}
 			}
 
-			if (wasWildcard && wildcardIndex < wcardLength) {
+			// wildcardIndex points to non-wildcard character in wildcardTrimmed
+			// loop the string until it is found in sourceStr
+			if wasWildcard && wildcardIndex < wcardLength {
 				for sourceIndex < sourceLength &&
-				wildcardTrimmed[wildcardIndex] != sourceStr[sourceIndex] {
-						sourceIndex++
-					}
+					wildcardTrimmed[wildcardIndex] != sourceStr[sourceIndex] {
+					sourceIndex++
+				}
 			}
 		}
 
+		// if value found add to results
 		if wildcardIndex >= wcardLength {
 			if hasHeadingWildcard {
 				foundValues = append(foundValues, 0)
@@ -64,6 +75,7 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 			}
 		}
 
+		// advance start index
 		startIndex++
 	}
 

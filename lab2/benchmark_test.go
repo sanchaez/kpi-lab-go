@@ -44,7 +44,7 @@ func benchmarkMatch(b *testing.B, pattern string) {
 	}
 }
 
-func BenchmarkMatchsimplePattern(b *testing.B)  { benchmarkMatch(b, simplePattern) }
-func BenchmarkMatchfrequentPattern(b *testing.B)  { benchmarkMatch(b, frequentPattern) }
-func BenchmarkMatchabsentPattern(b *testing.B)  { benchmarkMatch(b, absentPattern) }
+func BenchmarkMatchsimplePattern(b *testing.B)   { benchmarkMatch(b, simplePattern) }
+func BenchmarkMatchfrequentPattern(b *testing.B) { benchmarkMatch(b, frequentPattern) }
+func BenchmarkMatchabsentPattern(b *testing.B)   { benchmarkMatch(b, absentPattern) }
 func BenchmarkMatchfrequentLetter(b *testing.B)  { benchmarkMatch(b, frequentLetter) }

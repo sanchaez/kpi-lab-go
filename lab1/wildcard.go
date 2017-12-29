@@ -33,25 +33,29 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 	// naїve algorithm
 	// Example pattern: ex**p*e (example)
 	for startIndex < sourceLength {
+
+		// skip wildcards until the last one
+		// guaranteed to have at least one non-wildcard at the end
 		if wildcardTrimmed[wildcardIndex] == '*' {
-			// skip wildcards until the last one
-			// guaranteed to have at least one non-wildcard at the end
 			for wildcardTrimmed[wildcardIndex] == '*' {
 				wildcardIndex++
 			}
 			wasWildcard = true
 		}
 
+		// update source index if it mathces the non-wildcard symbol
+		// advance wildcard counter
 		if sourceStr[sourceIndex] == wildcardTrimmed[wildcardIndex] {
 			sourceIndex++
 			wildcardIndex++
 			wasWildcard = false
-		} else if wasWildcard {
+		} else if wasWildcard { // wildcard always matches
 			sourceIndex++
-		} else {
+		} else { // search complete, start anew
 			isSearchReset = true
 		}
 
+		// if value found add to result
 		if wildcardIndex >= wcardLength && !isSearchReset {
 			if hasHeadingWildcard {
 				foundValues = append(foundValues, 0)
@@ -61,6 +65,7 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 			isSearchReset = true
 		}
 
+		// reset (advance) search
 		if isSearchReset || sourceIndex == sourceLength {
 			wildcardIndex = 0
 			startIndex++
