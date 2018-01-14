@@ -14,8 +14,8 @@ type testpair struct {
 type testCases []testpair
 
 var deadCases = testCases{
-	{"", "", nil},
-	{"no test", "", nil},
+	{"", "", []int{0}},
+	{"no test", "", []int{0}},
 	{"", "no origin", nil},
 	{"small", "bigger than original", nil},
 }
@@ -30,6 +30,7 @@ var singleLetter = testCases{
 }
 
 var multipleLetters = testCases{
+	{"test", "*", []int{0}},
 	{"test", "es", []int{1}},
 	{"test", "te", []int{0}},
 	{"test", "test", []int{0}},
