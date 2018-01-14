@@ -1,6 +1,7 @@
 package wildcard
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -37,14 +38,23 @@ var frequentPattern = `a*a`
 var absentPattern = `abrakad*abra`
 var frequentLetter = `a`
 
-func benchmarkMatch(b *testing.B, pattern string) {
+func benchmarkMatch(b *testing.B, pattern string, srcMultiplier int) {
+	strA := []string{sourceString}
+	for i := 0; i < srcMultiplier; i++ {
+		strA = append(strA, sourceString)
+	}
+	str := strings.Join(strA, "")
 	for n := 0; n < b.N; n++ {
 		// run the Match function b.N times
-		Match(sourceString, pattern)
+		Match(sourceString, str)
 	}
 }
 
-func BenchmarkMatchsimplePattern(b *testing.B)  { benchmarkMatch(b, simplePattern) }
-func BenchmarkMatchfrequentPattern(b *testing.B)  { benchmarkMatch(b, frequentPattern) }
-func BenchmarkMatchabsentPattern(b *testing.B)  { benchmarkMatch(b, absentPattern) }
-func BenchmarkMatchfrequentLetter(b *testing.B)  { benchmarkMatch(b, frequentLetter) }
+func BenchmarkSingle(b *testing.B)            { benchmarkMatch(b, simplePattern, 0) }
+func BenchmarkFrequent(b *testing.B)          { benchmarkMatch(b, frequentPattern, 0) }
+func BenchmarkAbsent(b *testing.B)            { benchmarkMatch(b, absentPattern, 0) }
+func BenchmarkFrequentLetter(b *testing.B)    { benchmarkMatch(b, frequentLetter, 0) }
+func BenchmarkSingle100(b *testing.B)         { benchmarkMatch(b, simplePattern, 100) }
+func BenchmarkFrequent100(b *testing.B)       { benchmarkMatch(b, frequentPattern, 100) }
+func BenchmarkAbsent100(b *testing.B)         { benchmarkMatch(b, absentPattern, 100) }
+func BenchmarkFrequentLetter100(b *testing.B) { benchmarkMatch(b, frequentLetter, 100) }
