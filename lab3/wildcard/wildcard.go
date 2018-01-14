@@ -7,12 +7,10 @@ import (
 )
 
 func hasMatched(sourceStr, wildcardStr string, startIndex int) bool {
-	sourceIndex, wildcardIndex, wasWildcard := startIndex, 0, false
+	sourceIndex, wildcardIndex := startIndex, 0
 	wcardLength, sourceLength := len(wildcardStr), len(sourceStr)
 
 	// search
-	wildcardIndex = 0
-
 	// loop to find an entry starting from startIndex
 	for wildcardIndex < wcardLength &&
 		sourceIndex < sourceLength &&
@@ -23,22 +21,20 @@ func hasMatched(sourceStr, wildcardStr string, startIndex int) bool {
 
 		// skip wildcards until the last one
 		// guaranteed to have at least one non-wildcard at the end
-		wasWildcard = false
 		if wildcardIndex < wcardLength &&
 			wildcardStr[wildcardIndex] == '*' {
-			wasWildcard = true
 			for wildcardIndex < wcardLength &&
 				wildcardStr[wildcardIndex] == '*' {
 				wildcardIndex++
 			}
-		}
 
-		// wildcardIndex points to non-wildcard character in wildcardTrimmed
-		// loop the string until it is found in sourceStr
-		if wasWildcard && wildcardIndex < wcardLength {
-			for sourceIndex < sourceLength &&
-				wildcardStr[wildcardIndex] != sourceStr[sourceIndex] {
-				sourceIndex++
+			// wildcardIndex points to non-wildcard character in wildcardTrimmed
+			// loop the string until it is found in sourceStr
+			if wildcardIndex < wcardLength {
+				for sourceIndex < sourceLength &&
+					wildcardStr[wildcardIndex] != sourceStr[sourceIndex] {
+					sourceIndex++
+				}
 			}
 		}
 	}
@@ -107,7 +103,6 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 	resultChannel := make(chan int, sourceLength)
 	wg := sync.WaitGroup{}
 	var fn matchRoutine
-
 	if hasHeadingWildcard {
 		fn = matchGoroutineWcard
 	} else {
