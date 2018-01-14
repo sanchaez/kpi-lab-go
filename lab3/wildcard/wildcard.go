@@ -68,8 +68,6 @@ func matchGoroutine(sourceStr, wildcardStr string,
 	wg *sync.WaitGroup) {
 	if hasMatched(sourceStr, wildcardStr, startIndex) {
 		channel <- startIndex
-	} else {
-		channel <- -1
 	}
 
 	wg.Done()
@@ -81,8 +79,6 @@ func matchGoroutineWcard(sourceStr, wildcardStr string,
 	wg *sync.WaitGroup) {
 	if hasMatched(sourceStr, wildcardStr, startIndex) {
 		channel <- 0
-	} else {
-		channel <- -1
 	}
 
 	wg.Done()
@@ -128,10 +124,7 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 	close(resultChannel)
 
 	for value := range resultChannel {
-		if value >= 0 {
-			foundValues = append(foundValues, value)
-		}
-
+		foundValues = append(foundValues, value)
 	}
 
 	sort.Ints(foundValues)
