@@ -10,16 +10,16 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 	hasHeadingWildcard := false
 	foundValues = nil
 
-	//if wildcard is empty pattern match always fails
-	if wildcardStr == "" {
-		return
-	}
-
 	//remove trailing *
 	wildcardTrimmed := strings.TrimRight(wildcardStr, "*")
+
 	// if nothing left pattern always matches all the string
 	if wildcardTrimmed == "" {
 		foundValues = []int{0}
+		return
+	}
+
+	if len(wildcardTrimmed) > len(sourceStr) {
 		return
 	}
 
