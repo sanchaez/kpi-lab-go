@@ -5,7 +5,7 @@ import (
 )
 
 func hasMatched(sourceStr, wildcardStr string) bool {
-	sourceIndex, wildcardIndex := 0, 0
+	var sourceIndex, wildcardIndex int
 	wcardLength, sourceLength := len(wildcardStr), len(sourceStr)
 
 	// search
@@ -26,7 +26,7 @@ func hasMatched(sourceStr, wildcardStr string) bool {
 				wildcardIndex++
 			}
 
-			// wildcardIndex points to non-wildcard character in wildcardTrimmed
+			// wildcardIndex points to non-wildcard character in wildcardStr
 			// loop the string until it is found in sourceStr
 			if wildcardIndex < wcardLength {
 				for sourceIndex < sourceLength &&
@@ -91,7 +91,6 @@ func matchGoroutineWcard(sourceStr, wildcardStr string,
 //With heading wildcards `***str` position 1 will be returned N times.
 func Match(sourceStr, wildcardStr string) []int {
 	hasHeadingWildcard := readyWildcardString(&wildcardStr)
-	//var sem = make(chan struct{}, 100)
 
 	if wildcardStr == "" {
 		return []int{0}
@@ -108,10 +107,14 @@ func Match(sourceStr, wildcardStr string) []int {
 		fn = matchGoroutine
 	}
 
-	// make in channel
+	// make channels
 	sourceLength := len(sourceStr)
-	in := make(chan int, sourceLength/8)
+	const parallelWorkers int = 4
+	in := make(chan int, parallelWorkers)
+	out := make(chan int, sourceLength)
+	done := make(chan bool, parallelWorkers)
 
+	// spawn producer
 	go func() {
 		for i := 0; i < sourceLength; i++ {
 			if sourceStr[i] == wildcardStr[0] {
@@ -122,32 +125,30 @@ func Match(sourceStr, wildcardStr string) []int {
 		close(in)
 	}()
 
-	out := make(chan int, sourceLength)
-	done := make(chan bool)
-
-	// spawn parallel workers
-	const parallelWorkers int = 4
+	// spawn consumers
 	for p := 0; p < parallelWorkers; p++ {
 		go func() {
-			// Search the substrings, starting from v
+			// search the substrings in v
 			for v := range in {
 				fn(sourceStr, wildcardStr, v, out)
 			}
-			// Denote completion of this goroutine.
+			// denote completion of this goroutine
 			done <- true
 		}()
 	}
 
+	// spawn waiter
 	go func() {
-		// receive P values from done channel
+		// wait for workers
 		for p := 0; p < parallelWorkers; p++ {
 			<-done
 		}
-		// At this point we know that all worker goroutines has completed
-		// and no more data is coming, so close the output channel.
+
+		// finish workers
 		close(out)
 	}()
 
+	// capture values as they come
 	var foundValues []int
 	for value := range out {
 		foundValues = append(foundValues, value)
