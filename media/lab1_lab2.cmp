@@ -1,0 +1,9 @@
+benchmark                        old ns/op     new ns/op     delta
+BenchmarkSingle-8                5451          4213          -22.71%
+BenchmarkFrequent-8              5453          4229          -22.45%
+BenchmarkAbsent-8                5434          4198          -22.75%
+BenchmarkFrequentLetter-8        5476          4227          -22.81%
+BenchmarkSingle100-8             65.8          67.6          +2.74%
+BenchmarkFrequent100-8           65.5          67.8          +3.51%
+BenchmarkAbsent100-8             65.1          68.0          +4.45%
+BenchmarkFrequentLetter100-8     66.9          67.4          +0.75%
