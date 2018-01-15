@@ -2,12 +2,10 @@ package wildcard
 
 import (
 	"sort"
-	"strings"
-	"sync"
 )
 
-func hasMatched(sourceStr, wildcardStr string, startIndex int) bool {
-	sourceIndex, wildcardIndex := startIndex, 0
+func hasMatched(sourceStr, wildcardStr string) bool {
+	sourceIndex, wildcardIndex := 0, 0
 	wcardLength, sourceLength := len(wildcardStr), len(sourceStr)
 
 	// search
@@ -48,60 +46,61 @@ func hasMatched(sourceStr, wildcardStr string, startIndex int) bool {
 }
 
 func readyWildcardString(str *string) bool {
-	*str = strings.TrimRight(*str, "*")
-	if strings.HasPrefix(*str, "*") {
-		*str = strings.TrimLeft(*str, "*")
+	length := len(*str)
+	begin, end := 0, length
+	for i := 0; i < length && (*str)[i] == '*'; i++ {
+		begin++
+	}
+	for i := length - 1; i >= 0 && (*str)[i] == '*'; i-- {
+		end--
+	}
+	if begin <= end {
+		*str = (*str)[begin:end]
+	} else {
+		*str = ""
+	}
+
+	if begin > 0 {
 		return true
 	}
+
 	return false
 }
 
-type matchRoutine func(string, string, int, chan int, *sync.WaitGroup)
+type matchRoutine func(string, string, int, chan int)
 
 func matchGoroutine(sourceStr, wildcardStr string,
 	startIndex int,
-	channel chan int,
-	wg *sync.WaitGroup) {
-	if hasMatched(sourceStr, wildcardStr, startIndex) {
+	channel chan int) {
+	if hasMatched(sourceStr[startIndex:], wildcardStr) {
 		channel <- startIndex
 	}
-
-	wg.Done()
 }
 
 func matchGoroutineWcard(sourceStr, wildcardStr string,
 	startIndex int,
-	channel chan int,
-	wg *sync.WaitGroup) {
-	if hasMatched(sourceStr, wildcardStr, startIndex) {
+	channel chan int) {
+	if hasMatched(sourceStr[startIndex:], wildcardStr) {
 		channel <- 0
 	}
-
-	wg.Done()
 }
 
 //Match does string matching with `*` wildcard support.
 //Returns a slice with N positions of all matched wildcardStr substrings in sourceStr.
 //Trailing wildcards `str***` are ignored.
 //With heading wildcards `***str` position 1 will be returned N times.
-func Match(sourceStr, wildcardStr string) (foundValues []int) {
+func Match(sourceStr, wildcardStr string) []int {
 	hasHeadingWildcard := readyWildcardString(&wildcardStr)
-	foundValues = nil
 	//var sem = make(chan struct{}, 100)
 
 	if wildcardStr == "" {
-		foundValues = []int{0}
-		return
+		return []int{0}
 	}
 
 	if len(wildcardStr) > len(sourceStr) {
-		return
+		return nil
 	}
 
-	sourceLength := len(sourceStr)
-
-	resultChannel := make(chan int, sourceLength)
-	wg := sync.WaitGroup{}
 	var fn matchRoutine
 	if hasHeadingWildcard {
 		fn = matchGoroutineWcard
@@ -109,19 +108,51 @@ func Match(sourceStr, wildcardStr string) (foundValues []int) {
 		fn = matchGoroutine
 	}
 
-	wg.Add(sourceLength)
+	// make in channel
+	sourceLength := len(sourceStr)
+	in := make(chan int, sourceLength/8)
 
-	for index := 0; index < sourceLength; index++ {
-		go fn(sourceStr, wildcardStr, index, resultChannel, &wg)
+	go func() {
+		for i := 0; i < sourceLength; i++ {
+			if sourceStr[i] == wildcardStr[0] {
+				in <- i
+			}
+		}
+
+		close(in)
+	}()
+
+	out := make(chan int, sourceLength)
+	done := make(chan bool)
+
+	// spawn parallel workers
+	const parallelWorkers int = 4
+	for p := 0; p < parallelWorkers; p++ {
+		go func() {
+			// Search the substrings, starting from v
+			for v := range in {
+				fn(sourceStr, wildcardStr, v, out)
+			}
+			// Denote completion of this goroutine.
+			done <- true
+		}()
 	}
 
-	wg.Wait()
-	close(resultChannel)
+	go func() {
+		// receive P values from done channel
+		for p := 0; p < parallelWorkers; p++ {
+			<-done
+		}
+		// At this point we know that all worker goroutines has completed
+		// and no more data is coming, so close the output channel.
+		close(out)
+	}()
 
-	for value := range resultChannel {
+	var foundValues []int
+	for value := range out {
 		foundValues = append(foundValues, value)
 	}
 
 	sort.Ints(foundValues)
-	return
+	return foundValues
 }
