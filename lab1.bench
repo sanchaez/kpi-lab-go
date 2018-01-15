@@ -1,0 +1,13 @@
+goos: linux
+goarch: amd64
+pkg: github.com/sanchaez/kpi-lab-go/lab1/wildcard
+BenchmarkSingle-8              	  300000	      5451 ns/op
+BenchmarkFrequent-8            	  300000	      5453 ns/op
+BenchmarkAbsent-8              	  300000	      5434 ns/op
+BenchmarkFrequentLetter-8      	  300000	      5476 ns/op
+BenchmarkSingle100-8           	20000000	        65.8 ns/op
+BenchmarkFrequent100-8         	20000000	        65.5 ns/op
+BenchmarkAbsent100-8           	20000000	        65.1 ns/op
+BenchmarkFrequentLetter100-8   	20000000	        66.9 ns/op
+PASS
+ok  	github.com/sanchaez/kpi-lab-go/lab1/wildcard	12.342s
